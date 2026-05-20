@@ -7,7 +7,7 @@ const baseDir = path.join(__dirname, "workbench");
 const appDir = path.join(baseDir, "app");
 
 const artisan = (command: string): void =>
-    console.error(execSync(`${testbenchDir} ${command}`).toString("utf8"));
+    console.error(execSync(`php -d memory_limit=-1 ${testbenchDir} ${command}`).toString("utf8"));
 
 export function setup(): void {
     try {

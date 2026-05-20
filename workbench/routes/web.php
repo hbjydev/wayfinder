@@ -19,6 +19,7 @@ use App\Http\Controllers\NavigationItemController;
 use App\Http\Controllers\Nested\NestedController;
 use App\Http\Controllers\OptionalController;
 use App\Http\Controllers\ParameterNameController;
+use App\Http\Controllers\PaginatedProductController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Prism\Prism\PrismController as NestedPrismController;
 use App\Http\Controllers\Prism\PrismController;
@@ -38,6 +39,10 @@ Route::get('/invokable-controller', InvokableController::class);
 Route::get('/named-invokable-controller', NamedInvokableController::class)->name('invokable');
 Route::get('/invokable-plus-controller', InvokablePlusController::class);
 Route::post('/invokable-plus-controller', [InvokablePlusController::class, 'store']);
+
+Route::get('/paginated-products', [PaginatedProductController::class, 'index'])->name('paginated-products.index');
+Route::get('/paginated-products/simple', [PaginatedProductController::class, 'simple'])->name('paginated-products.simple');
+Route::get('/paginated-products/cursor', [PaginatedProductController::class, 'cursor'])->name('paginated-products.cursor');
 
 Route::get('/posts', [PostController::class, 'index'])->name('posts.index');
 Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');

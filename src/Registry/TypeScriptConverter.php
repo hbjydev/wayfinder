@@ -112,13 +112,22 @@ class TypeScriptConverter extends AbstractConverter
         };
 
         if ($matched === null) {
-            $resolved = app(ArrayableResolver::class)->resolve($result);
+            $genericTypes = $result->genericTypes();
 
-            if ($resolved) {
-                return $this->convert($resolved);
+            if (! $genericTypes) {
+                $resolved = app(ArrayableResolver::class)->resolve($result);
+
+                if ($resolved) {
+                    return $this->convert($resolved);
+                }
             }
 
             $matched = str_replace('\\', '.', $class);
+
+            if ($genericTypes) {
+                $converted = array_map(fn ($type) => $this->convert($type), $genericTypes);
+                $matched .= '<'.implode(', ', $converted).'>';
+            }
         }
 
         return $this->decorate($matched, $result);
