@@ -3,6 +3,9 @@
 namespace Laravel\Wayfinder\Registry;
 
 use DateTimeInterface;
+use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Stringable;
 use InvalidArgumentException;
@@ -125,6 +128,7 @@ class TypeScriptConverter extends AbstractConverter
             $matched = str_replace('\\', '.', $class);
 
             if ($genericTypes) {
+                $this->ensureFrameworkTypeDefinition($class);
                 $converted = array_map(fn ($type) => $this->convert($type), $genericTypes);
                 $matched .= '<'.implode(', ', $converted).'>';
             }
@@ -142,6 +146,46 @@ class TypeScriptConverter extends AbstractConverter
             1 => $this->convert($genericTypes[0]).'[]',
             default => $this->convert($genericTypes[1]).'[]',
         };
+    }
+
+    protected function ensureFrameworkTypeDefinition(string $class): void
+    {
+        match (true) {
+            is_a($class, LengthAwarePaginator::class, true) => $this->registerLengthAwarePaginatorDefinition($class),
+            is_a($class, Paginator::class, true) => $this->registerPaginatorDefinition($class),
+            is_a($class, CursorPaginator::class, true) => $this->registerCursorPaginatorDefinition($class),
+            default => null,
+        };
+    }
+
+    protected function registerLengthAwarePaginatorDefinition(string $class): void
+    {
+        $name = class_basename($class);
+
+        TypeScript::addFqnToNamespaced(
+            $class,
+            "export type {$name}<T> = { current_page: number, data: T[], first_page_url: string, from: number | null, last_page: number, last_page_url: string, links: { url: string | null, label: string, active: boolean }[], next_page_url: string | null, path: string | null, per_page: number, prev_page_url: string | null, to: number | null, total: number }",
+        );
+    }
+
+    protected function registerPaginatorDefinition(string $class): void
+    {
+        $name = class_basename($class);
+
+        TypeScript::addFqnToNamespaced(
+            $class,
+            "export type {$name}<T> = { current_page: number, current_page_url: string, data: T[], first_page_url: string, from: number | null, next_page_url: string | null, path: string | null, per_page: number, prev_page_url: string | null, to: number | null }",
+        );
+    }
+
+    protected function registerCursorPaginatorDefinition(string $class): void
+    {
+        $name = class_basename($class);
+
+        TypeScript::addFqnToNamespaced(
+            $class,
+            "export type {$name}<T> = { data: T[], path: string | null, per_page: number, next_cursor: string | null, next_page_url: string | null, prev_cursor: string | null, prev_page_url: string | null }",
+        );
     }
 
     protected function convertNumberResult(Types\IntType|Types\FloatType|Types\NumberType $result): string

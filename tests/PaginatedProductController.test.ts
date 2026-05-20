@@ -30,4 +30,22 @@ describe("PaginatedProductController", () => {
             "products: Illuminate.Pagination.CursorPaginator<App.Models.Product>",
         );
     });
+
+    test("LengthAwarePaginator generic type definition is generated", () => {
+        expect(types()).toContain(
+            "export type LengthAwarePaginator<T> = { current_page: number, data: T[]",
+        );
+    });
+
+    test("Paginator generic type definition is generated", () => {
+        expect(types()).toContain(
+            "export type Paginator<T> = { current_page: number",
+        );
+    });
+
+    test("CursorPaginator generic type definition is generated", () => {
+        expect(types()).toContain(
+            "export type CursorPaginator<T> = { data: T[]",
+        );
+    });
 });
